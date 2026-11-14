@@ -220,27 +220,11 @@
     <section class="panel">
       <div class="section-title">CREATE YOUR IMAGE</div>
 
-      <label for="token">Hugging Face Access Token</label>
-      <input id="token" type="password"
-        placeholder="貼上自己的 hf_ Token"
-        autocomplete="off">
-      <div class="hint">
-        Token 僅暫存在目前瀏覽器頁面，不會寫入程式碼。
-        請勿在公用電腦使用。
-      </div>
 
       <label for="prompt">圖片描述 Prompt</label>
       <textarea id="prompt"
         placeholder="例如：A luxury perfume bottle on a beige marble platform, soft studio lighting, premium commercial product photography..."></textarea>
 
-      <label for="ratio">圖片比例</label>
-      <select id="ratio">
-        <option value="1024,1024">正方形 1:1</option>
-        <option value="1024,768">橫式 4:3</option>
-        <option value="768,1024">直式 3:4</option>
-        <option value="1024,576">寬螢幕 16:9</option>
-        <option value="576,1024">直式 9:16</option>
-      </select>
 
       <button class="generate" id="generateBtn"
         onclick="generateImage()">
@@ -276,38 +260,28 @@
   · FLUX.1-SCHNELL
 </footer>
 
-<script type="module">
-  import { InferenceClient } from
-    "https://esm.sh/@huggingface/inference";
 
-  const MODEL = "black-forest-labs/FLUX.1-schnell";
+<script>
+  const WORKER_URL =
+    "https://falling-smoke-4d0bstudio-flux-api.wendy121888.workers.dev/generate";
 
   let currentImageUrl = null;
 
-  window.generateImage = async function () {
-    const token = document.getElementById("token").value.trim();
+  async function generateImage() {
     const prompt = document.getElementById("prompt").value.trim();
-    const ratio = document.getElementById("ratio").value;
     const button = document.getElementById("generateBtn");
     const message = document.getElementById("message");
     const preview = document.getElementById("preview");
     const download = document.getElementById("download");
-
-    if (!token) {
-      message.textContent = "請先輸入 Hugging Face Token。";
-      return;
-    }
 
     if (!prompt) {
       message.textContent = "請輸入圖片描述。";
       return;
     }
 
-    const [width, height] = ratio.split(",").map(Number);
-
     button.disabled = true;
     button.textContent = "GENERATING...";
-    message.textContent = "正在連接 FLUX.1-schnell，請稍候...";
+    message.textContent = "正在連接 STUDIO FLUX，請稍候...";
     download.style.display = "none";
 
     preview.innerHTML = `
@@ -319,18 +293,27 @@
     `;
 
     try {
-      const client = new InferenceClient(token);
-
-      const imageBlob = await client.textToImage({
-        provider: "auto",
-        model: MODEL,
-        inputs: prompt,
-        parameters: {
-          width,
-          height,
-          num_inference_steps: 4
-        }
+      const response = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ prompt })
       });
+
+      if (!response.ok) {
+        let errorMessage = "圖片生成失敗";
+        try {
+          const errorData = await response.json();
+          errorMessage =
+            errorData.detail ||
+            errorData.error ||
+            errorMessage;
+        } catch (_) {}
+        throw new Error(errorMessage);
+      }
+
+      const imageBlob = await response.blob();
 
       if (currentImageUrl) {
         URL.revokeObjectURL(currentImageUrl);
@@ -340,7 +323,7 @@
 
       const img = document.createElement("img");
       img.src = currentImageUrl;
-      img.alt = "AI generated image";
+      img.alt = "STUDIO FLUX AI generated image";
 
       preview.replaceChildren(img);
 
@@ -361,13 +344,26 @@
 
       message.textContent =
         "生成失敗：" + (error.message || "未知錯誤") +
-        "\n請檢查 Token、模型權限及 Inference Provider 額度。";
+        "\n請稍後再試，或聯絡老師。";
 
     } finally {
       button.disabled = false;
       button.textContent = "✦ GENERATE IMAGE";
     }
-  };
+  }
+
+  window.generateImage = generateImage;
 </script>
+
+  
+    preview.innerHTML = `
+      <div class="placeholder">
+        <div class="symbol">✧</div>
+        <div>CREATING YOUR IMAGE...</div>
+        <p class="hint">AI 正在將文字轉換成影像</p>
+      </div>
+    `;
+
+ 
 </body>
 </html>
