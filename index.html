@@ -117,6 +117,50 @@
       margin-top: 8px;
     }
 
+    .preset-container {
+      margin-top: 14px;
+    }
+
+    .preset-header {
+      font-size: 11px;
+      color: #a4a6ad;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .preset-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .preset-btn {
+      background: #171a20;
+      border: 1px solid #454a55;
+      color: #e4e1db;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .preset-btn:hover {
+      border-color: #c9a875;
+      color: #c9a875;
+      background: rgba(201, 168, 117, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .preset-btn:active {
+      transform: translateY(0);
+    }
+
     .generate {
       width: 100%;
       margin-top: 25px;
@@ -224,6 +268,18 @@
       <label for="prompt">圖片描述 Prompt</label>
       <textarea id="prompt"
         placeholder="例如：A luxury perfume bottle on a beige marble platform, soft studio lighting, premium commercial product photography..."></textarea>
+
+      <div class="preset-container">
+        <div class="preset-header">✧ 快速靈感標籤 (點擊填入)：</div>
+        <div class="preset-tags">
+          <button type="button" class="preset-btn" onclick="applyPreset('portrait')">📸 寫實人像</button>
+          <button type="button" class="preset-btn" onclick="applyPreset('cyberpunk')">🌃 賽博龐克</button>
+          <button type="button" class="preset-btn" onclick="applyPreset('product')">✨ 產品攝影</button>
+          <button type="button" class="preset-btn" onclick="applyPreset('anime')">🎨 動漫風格</button>
+          <button type="button" class="preset-btn" onclick="applyPreset('fantasy')">🌲 奇幻秘境</button>
+          <button type="button" class="preset-btn" onclick="applyPreset('render3d')">🧸 3D 黏土</button>
+        </div>
+      </div>
 
 
       <button class="generate" id="generateBtn"
@@ -352,18 +408,27 @@
     }
   }
 
+  const PRESETS = {
+    portrait: "Close-up portrait of an elegant woman, soft cinematic studio lighting, highly detailed skin texture, 85mm portrait lens, shallow depth of field, photorealistic, 8k",
+    cyberpunk: "Futuristic cyberpunk neon city street at night in rain, towering skyscrapers, holographic billboards, flying vehicles, reflections on wet asphalt, cinematic lighting, 8k",
+    product: "A luxury perfume bottle on a polished beige marble platform, soft dramatic studio lighting, water splashes, premium commercial product photography, 8k resolution",
+    anime: "Vibrant anime illustration of a magical girl with glowing hair standing on a floating island above clouds, Makoto Shinkai style, breathtaking sunset, detailed sky, masterpiece",
+    fantasy: "An ancient glowing tree of life in a mystical enchanted forest, bioluminescent flora, fireflies, ethereal atmosphere, fantasy concept art, highly detailed, 8k",
+    render3d: "Cute 3D isometric miniature diorama of a cozy coffee shop, pastel colors, blender 3d render, soft clay materials, warm ambient lighting, highly detailed"
+  };
+
+  function applyPreset(presetKey) {
+    const promptInput = document.getElementById("prompt");
+    const message = document.getElementById("message");
+    if (PRESETS[presetKey]) {
+      promptInput.value = PRESETS[presetKey];
+      promptInput.focus();
+      message.textContent = "已套用靈感提示詞！點擊「✦ GENERATE IMAGE」即可開始生成。";
+    }
+  }
+
   window.generateImage = generateImage;
+  window.applyPreset = applyPreset;
 </script>
-
-  
-    preview.innerHTML = `
-      <div class="placeholder">
-        <div class="symbol">✧</div>
-        <div>CREATING YOUR IMAGE...</div>
-        <p class="hint">AI 正在將文字轉換成影像</p>
-      </div>
-    `;
-
- 
 </body>
 </html>
